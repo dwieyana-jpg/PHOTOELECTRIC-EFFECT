@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simulasi Efek Fotolistrik .SMANSA KRA VIRTUAL LAB — Fisika Modern</title>
+<style>
+  :root {
+    --bg: #070b14;
+    --panel: #0e1626;
+    --panel-2: #131e33;
+    --border: rgba(148, 163, 184, 0.16);
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-2: #a855f7;
+    --ok: #22c55e;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    background: radial-gradient(circle at top, #0f1c33 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 14px;
+  }
+
+  .app {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  header {
+    background: linear-gradient(135deg, rgba(14,22,38,0.95), rgba(19,30,51,0.95));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .brand h1 {
+    font-size: clamp(1.05rem, 2.2vw, 1.45rem);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    font-weight: 600;
+  }
+
+  .brand p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .eq-strip {
+    background: rgba(7, 11, 20, 0.75);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    color: #f8fafc;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .eq-strip span b {
+    color: var(--accent);
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  @media (max-width: 980px) {
+    .main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .card {
+    background: rgba(14, 22, 38, 0.92);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+  }
+
+  .card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-pill {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .status-ok {
+    background: rgba(34, 197, 94, 0.16);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+  }
+
+  .status-no {
+    background: rgba(239, 68, 68, 0.16);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+
+  canvas#simCanvas {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    background: #060a12;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    canvas#simCanvas {
+      aspect-ratio: 4 / 4;
+    }
+  }
+
+  .controls-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .controls-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ctrl-box {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+
+  .ctrl-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.82rem;
+    margin-bottom: 6px;
+  }
+
+  .ctrl-top label {
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .ctrl-val {
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .sub-note {
+    font-size: 0.73rem;
+    color: var(--muted);
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  select, button {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 7px 11px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s ease;
+  }
+
+  select:hover, button:hover {
+    border-color: var(--accent);
+    background: rgba(56, 189, 248, 0.12);
+  }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .btn-primary {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: rgba(56, 189, 248, 0.5);
+    color: #7dd3fc;
+  }
+
+  .telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+    margin-bottom: 12px;
+  }
+
+  .metric {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 9px 11px;
+  }
+
+  .metric .m-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .metric .m-val {
+    font-size: 0.98rem;
+    font-weight: 700;
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .charts-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  canvas.graph {
+    width: 100%;
+    height: 195px;
+    background: #060a12;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    display: block;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <h1>SIMULASI EFEK FOTOLISTRIK <span class="badge">SMANSAKRA LAB</span></h1>
+      <p>Eksperimen kuantum katoda-anoda, energi foton (E = h · f), energi kinetik maksimum, dan kurva I–V</p>
+    </div>
+    <div class="eq-strip">
+      <span><b>E_foton</b> = h · f</span>
+      <span><b>Ek_maks</b> = h · f − W₀</span>
+      <span><b>e · V_s</b> = Ek_maks</span>
+    </div>
+  </header>
+
+  <div class="main-grid">
+    <!-- KOLOM KIRI: TABUNG VAKUM & KONTROL -->
+    <div class="card">
+      <div class="card-title">
+        <span>Tabung Vakum Fotolistrik</span>
+        <span id="emissionBadge" class="status-pill status-ok">EMISI ELEKTRON AKTIF</span>
+      </div>
+
+      <canvas id="simCanvas" width="840" height="525"></canvas>
+
+      <div class="btn-row">
+        <select id="metalSelect" title="Pilih Bahan Katoda">
+          <option value="cs" data-w="2.14">Sesium (Cs) — W₀ = 2,14 eV</option>
+          <option value="k" data-w="2.30">Kalium (K) — W₀ = 2,30 eV</option>
+          <option value="na" data-w="2.36" selected>Natrium (Na) — W₀ = 2,36 eV</option>
+          <option value="ca" data-w="2.87">Kalsium (Ca) — W₀ = 2,87 eV</option>
+          <option value="zn" data-w="4.33">Seng (Zn) — W₀ = 4,33 eV</option>
+          <option value="cu" data-w="4.70">Tembaga (Cu) — W₀ = 4,70 eV</option>
+          <option value="pt" data-w="5.65">Platina (Pt) — W₀ = 5,65 eV</option>
+        </select>
+
+        <button id="btnPause" class="btn-primary">Jeda Simulasi</button>
+        <button id="btnReset">Reset Parameter</button>
+        <button id="btnThreshold">Loncat ke f₀ (Ambang)</button>
+      </div>
+
+      <div class="controls-grid">
+        <div class="ctrl-box">
+          <div class="ctrl-top">
+            <label for="freqSlider">Frekuensi Cahaya (f)</label>
+            <span class="ctrl-val" id="freqVal">8,00 × 10¹⁴ Hz</span>
+          </div>
+          <input type="range" id="freqSlider" min="3.0" max="16.0" step="0.05" value="8.0" />
+          <div class="sub-note">
+            <span id="lambdaVal">λ = 375 nm</span>
+            <span id="bandVal">UV Dekat</span>
+          </div>
+        </div>
+
+        <div class="ctrl-box">
+          <div class="ctrl-top">
+            <label for="intSlider">Intensitas Cahaya (I_cahaya)</label>
+            <span class="ctrl-val" id="intVal">75%</span>
+          </div>
+          <input type="range" id="intSlider" min="5" max="100" step="1" value="75" />
+          <div class="sub-note">
+            <span>Laju fluks foton</span>
+            <span id="fluxVal">~3,0 × 10¹⁵ foton/s</span>
+          </div>
+        </div>
+
+        <div class="ctrl-box">
+          <div class="ctrl-top">
+            <label for="voltSlider">Tegangan Anoda–Katoda (V)</label>
+            <span class="ctrl-val" id="voltVal">+1,00 V</span>
+          </div>
+          <input type="range" id="voltSlider" min="-5.0" max="5.0" step="0.05" value="1.0" />
+          <div class="sub-note">
+            <span>Negatif = Tegangan Henti</span>
+            <span id="vsHint">V_s = -0,95 V</span>
+          </div>
+        </div>
+
+        <div class="ctrl-box">
+          <div class="ctrl-top">
+            <label>Mode Tampilan Elektron</label>
+            <span class="ctrl-val" id="trailLabel">Jejak Aktif</span>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:2px;">
+            <button id="btnTrail" style="flex:1;">Toggle Jejak</button>
+            <button id="btnVectors" style="flex:1;">Vektor Kecepatan</button>
+          </div>
+          <div class="sub-note">
+            <span>Amati perlambatan saat V &lt; 0</span>
+            <span id="vecLabel">Vektor: ON</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KOLOM KANAN: TELEMETRI & GRAFIK REAL-TIME -->
+    <div class="card">
+      <div class="card-title">
+        <span>Data Kuantum & Grafik Analisis</span>
+      </div>
+
+      <div class="telemetry-grid">
+        <div class="metric">
+          <div class="m-label">Energi Foton (E = h·f)</div>
+          <div class="m-val" id="mEph" style="color:#38bdf8;">3,31 eV</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Frekuensi Ambang (f₀)</div>
+          <div class="m-val" id="mF0" style="color:#f59e0b;">5,70 × 10¹⁴ Hz</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Ek Maksimum (Ek_maks)</div>
+          <div class="m-val" id="mEk" style="color:#4ade80;">0,95 eV</div>
+        </div>
+        <div class="metric">
+          <div class="m-label">Arus Fotolistrik (I)</div>
+          <div class="m-val" id="mCurrent" style="color:#c084fc;">0,75 mA</div>
+        </div>
+      </div>
+
+      <div class="charts-stack">
+        <div>
+          <div class="card-title" style="margin-bottom:6px;">
+            <span>1. Grafik Arus Fotolistrik (I) vs Tegangan (V)</span>
+          </div>
+          <canvas id="ivCanvas" class="graph" width="520" height="195"></canvas>
+          <div class="legend">
+            <span><i class="dot" style="background:#38bdf8;"></i>Kurva I–V bahan aktif</span>
+            <span><i class="dot" style="background:#f59e0b;"></i>Titik kerja (V, I) saat ini</span>
+            <span><i class="dot" style="background:#ef4444;"></i>Tegangan Henti (V_s)</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="card-title" style="margin-bottom:6px;">
+            <span>2. Grafik Ek_maks vs Frekuensi Cahaya (f)</span>
+          </div>
+          <canvas id="ekCanvas" class="graph" width="520" height="195"></canvas>
+          <div class="legend">
+            <span><i class="dot" style="background:#4ade80;"></i>Ek_maks = h·f − W₀ (kemiringan = h)</span>
+            <span><i class="dot" style="background:#f59e0b;"></i>Intersep f₀</span>
+            <span><i class="dot" style="background:#a855f7;"></i>Posisi (f, Ek_maks)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // Konstanta Fisika (dalam satuan SI & eV)
+  const h_eVs = 4.135667696e-15; // eV.s
+  const h_Js = 6.62607015e-34;    // J.s
+  const c = 2.99792458e8;         // m/s
+  const eV_to_J = 1.602176634e-19;
+  const m_e = 9.1093837015e-31;   // kg
+
+  // Elemen DOM
+  const simCanvas = document.getElementById("simCanvas");
+  const ctx = simCanvas.getContext("2d");
+  const ivCanvas = document.getElementById("ivCanvas");
+  const ivCtx = ivCanvas.getContext("2d");
+  const ekCanvas = document.getElementById("ekCanvas");
+  const ekCtx = ekCanvas.getContext("2d");
+
+  const metalSelect = document.getElementById("metalSelect");
+  const freqSlider = document.getElementById("freqSlider");
+  const intSlider = document.getElementById("intSlider");
+  const voltSlider = document.getElementById("voltSlider");
+
+  const btnPause = document.getElementById("btnPause");
+  const btnReset = document.getElementById("btnReset");
+  const btnThreshold = document.getElementById("btnThreshold");
+  const btnTrail = document.getElementById("btnTrail");
+  const btnVectors = document.getElementById("btnVectors");
+
+  let paused = false;
+  let showTrail = true;
+  let showVectors = true;
+
+  let photons = [];
+  let electrons = [];
+  let photonSpawnAcc = 0;
+
+  function getPhysicsState() {
+    const W0 = parseFloat(metalSelect.selectedOptions[0].dataset.w); // eV
+    const f14 = parseFloat(freqSlider.value); // dalam satuan 10^14 Hz
+    const f = f14 * 1e14; // Hz
+    const intensity = parseFloat(intSlider.value); // 0..100%
+    const V = parseFloat(voltSlider.value); // Volt (-5..+5)
+
+    const E_photon = h_eVs * f; // eV
+    const f0 = W0 / h_eVs; // Hz
+    const f0_14 = f0 / 1e14;
+    const Ek_max = Math.max(0, E_photon - W0); // eV
+    const canEmit = E_photon > W0;
+    const Vs = canEmit ? -Ek_max : 0; // Tegangan henti (negatif)
+
+    // Kecepatan maksimum elektron (relatif/skala visual + fisik)
+    const vMax_phys = canEmit ? Math.sqrt((2 * Ek_max * eV_to_J) / m_e) : 0;
+
+    // Model arus fotolistrik ternormalisasi (0..1.0 * intensitas)
+    // Jika V >= 0: arus saturasi penuh sebanding intensitas
+    // Jika V < 0: arus turun menuju 0 saat V mendekati Vs
+    let currentNorm = 0;
+    if (canEmit) {
+      const iSat = intensity / 100;
+      if (V >= 0) {
+        currentNorm = iSat;
+      } else if (V > Vs) {
+        const frac = (V - Vs) / Math.abs(Vs || 1);
+        currentNorm = iSat * Math.pow(Math.max(0, Math.min(1, frac)), 1.35);
+      } else {
+        currentNorm = 0;
+      }
+    }
+
+    const current_mA = currentNorm * 1.0; // skala mA untuk tampilan lab
+    const wavelength_nm = (c / f) * 1e9;
+
+    return {
+      W0, f14, f, intensity, V,
+      E_photon, f0, f0_14, Ek_max,
+      canEmit, Vs, vMax_phys,
+      currentNorm, current_mA, wavelength_nm
+    };
+  }
+
+  function freqToColor(f14) {
+    // Pemetaan visual: inframerah (merah tua) -> spektrum tampak -> ultraviolet (ungu/violet)
+    if (f14 < 4.0) return "#dc2626";
+    if (f14 < 4.8) return "#ef4444";
+    if (f14 < 5.2) return "#f97316";
+    if (f14 < 5.6) return "#eab308";
+    if (f14 < 6.2) return "#22c55e";
+    if (f14 < 6.8) return "#06b6d4";
+    if (f14 < 7.5) return "#3b82f6";
+    return "#a855f7";
+  }
+
+  function bandName(wavelength_nm) {
+    if (wavelength_nm > 700) return "Inframerah (IR)";
+    if (wavelength_nm >= 620) return "Merah";
+    if (wavelength_nm >= 590) return "Jingga";
+    if (wavelength_nm >= 570) return "Kuning";
+    if (wavelength_nm >= 495) return "Hijau";
+    if (wavelength_nm >= 450) return "Biru";
+    if (wavelength_nm >= 380) return "Ungu (Violet)";
+    return "Ultraviolet (UV)";
+  }
+
+  function fmtNum(n, dec = 2) {
+    return n.toFixed(dec).replace(".", ",");
+  }
+
+  function updateUI(s) {
+    document.getElementById("freqVal").textContent = `${fmtNum(s.f14, 2)} × 10¹⁴ Hz`;
+    document.getElementById("lambdaVal").textContent = `λ = ${Math.round(s.wavelength_nm)} nm`;
+    document.getElementById("bandVal").textContent = bandName(s.wavelength_nm);
+
+    document.getElementById("intVal").textContent = `${Math.round(s.intensity)}%`;
+    const fluxEst = (s.intensity / 100) * 4.0;
+    document.getElementById("fluxVal").textContent = `~${fmtNum(fluxEst, 2)} × 10¹⁵ foton/s`;
+
+    const vSign = s.V > 0 ? "+" : "";
+    document.getElementById("voltVal").textContent = `${vSign}${fmtNum(s.V, 2)} V`;
+    document.getElementById("vsHint").textContent = s.canEmit
+      ? `V_s = ${fmtNum(s.Vs, 2)} V`
+      : `Tidak ada emisi`;
+
+    document.getElementById("mEph").textContent = `${fmtNum(s.E_photon, 2)} eV`;
+    document.getElementById("mF0").textContent = `${fmtNum(s.f0_14, 2)} × 10¹⁴ Hz`;
+    document.getElementById("mEk").textContent = `${fmtNum(s.Ek_max, 2)} eV`;
+    document.getElementById("mCurrent").textContent = `${fmtNum(s.current_mA, 2)} mA`;
+
+    const badge = document.getElementById("emissionBadge");
+    if (!s.canEmit) {
+      badge.textContent = "f < f₀ (TIDAK ADA EMISI)";
+      badge.className = "status-pill status-no";
+    } else if (s.currentNorm <= 0.01 && s.V < 0) {
+      badge.textContent = "TERHENTIKAN TEGANGAN (V ≤ V_s)";
+      badge.className = "status-pill status-no";
+    } else {
+      badge.textContent = "EMISI ELEKTRON AKTIF";
+      badge.className = "status-pill status-ok";
+    }
+  }
+
+  // Koordinat tabung vakum pada canvas 840x525
+  const tube = {
+    x: 170,
+    y: 95,
+    w: 500,
+    h: 250,
+    cathodeX: 225,
+    anodeX: 615
+  };
+
+  function spawnPhoton(s) {
+    const color = freqToColor(s.f14);
+    const startX = 72;
+    const startY = 38;
+    const targetX = tube.cathodeX + 6;
+    const targetY = tube.y + 45 + Math.random() * (tube.h - 90);
+    const dx = targetX - startX;
+    const dy = targetY - startY;
+    const len = Math.hypot(dx, dy);
+    const speed = 5.4;
+
+    photons.push({
+      x: startX,
+      y: startY,
+      vx: (dx / len) * speed,
+      vy: (dy / len) * speed,
+      targetX,
+      targetY,
+      color,
+      energy: s.E_photon,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+
+  function spawnElectron(yPos, s) {
+    // Distribusi energi awal elektron dari 0 hingga Ek_max
+    const randFactor = Math.pow(Math.random(), 0.55);
+    const ekInit = s.Ek_max * randFactor;
+    const vxInit = 1.6 + Math.sqrt(Math.max(0.05, ekInit)) * 3.1;
+    const vyInit = (Math.random() - 0.5) * 1.1;
+
+    electrons.push({
+      x: tube.cathodeX + 12,
+      y: yPos,
+      vx: vxInit,
+      vy: vyInit,
+      ek: ekInit,
+      trail: []
+    });
+  }
+
+  function stepSimulation(s) {
+    // Spawn foton berdasarkan intensitas
+    const spawnRate = 0.04 + (s.intensity / 100) * 0.45;
+    photonSpawnAcc += spawnRate;
+    while (photonSpawnAcc >= 1) {
+      spawnPhoton(s);
+      photonSpawnAcc -= 1;
+    }
+
+    // Update foton
+    for (let i = photons.length - 1; i >= 0; i--) {
+      const p = photons[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.phase += 0.35;
+
+      if (p.x >= p.targetX) {
+        if (s.canEmit) {
+          spawnElectron(p.y, s);
+        }
+        photons.splice(i, 1);
+      }
+    }
+
+    // Percepatan akibat medan listrik antar plat (V positif menarik ke anoda, V negatif menolak ke katoda)
+    // Jarak plat ~390px; faktor percepatan disesuaikan agar visual terasa intuitif
+    const ax = s.V * 0.052;
+
+    for (let i = electrons.length - 1; i >= 0; i--) {
+      const el = electrons[i];
+      if (showTrail) {
+        el.trail.push({ x: el.x, y: el.y });
+        if (el.trail.length > 14) el.trail.shift();
+      } else {
+        el.trail = [];
+      }
+
+      el.vx += ax;
+      el.x += el.vx;
+      el.y += el.vy;
+
+      // Pantulan halus di dinding atas/bawah tabung
+      if (el.y < tube.y + 14) {
+        el.y = tube.y + 14;
+        el.vy = Math.abs(el.vy);
+      } else if (el.y > tube.y + tube.h - 14) {
+        el.y = tube.y + tube.h - 14;
+        el.vy = -Math.abs(el.vy);
+      }
+
+      // Sampai di anoda (terserap menjadi arus) atau berbalik melebihi katoda (ditolak tegangan henti)
+      if (el.x >= tube.anodeX - 8 || el.x <= tube.cathodeX + 4 || el.x < tube.x || el.x > tube.x + tube.w) {
+        electrons.splice(i, 1);
+      }
+    }
+  }
+
+  function drawSim(s) {
+    ctx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+
+    const lightColor = freqToColor(s.f14);
+
+    // Sumber lampu di kiri atas
+    ctx.save();
+    ctx.translate(64, 34);
+    ctx.rotate(Math.atan2(tube.y + tube.h * 0.5 - 38, tube.cathodeX - 72));
+    ctx.fillStyle = "#1e293b";
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(-26, -15, 42, 30, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    // Lensa/bukaan lampu menyala sesuai frekuensi & intensitas
+    ctx.fillStyle = lightColor;
+    ctx.globalAlpha = 0.25 + (s.intensity / 100) * 0.75;
+    ctx.beginPath();
+    ctx.arc(16, 0, 11, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Berkas cahaya lembut dari lampu ke katoda
+    const gradBeam = ctx.createLinearGradient(72, 38, tube.cathodeX, tube.y + tube.h * 0.5);
+    gradBeam.addColorStop(0, lightColor + "33");
+    gradBeam.addColorStop(1, lightColor + "08");
+    ctx.fillStyle = gradBeam;
+    ctx.beginPath();
+    ctx.moveTo(76, 26);
+    ctx.lineTo(tube.cathodeX, tube.y + 35);
+    ctx.lineTo(tube.cathodeX, tube.y + tube.h - 35);
+    ctx.lineTo(62, 48);
+    ctx.closePath();
+    ctx.fill();
+
+    // Tabung vakum kaca
+    ctx.fillStyle = "rgba(15, 23, 42, 0.55)";
+    ctx.strokeStyle = "rgba(148, 163, 184, 0.45)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(tube.x, tube.y, tube.w, tube.h, 36);
+    ctx.fill();
+    ctx.stroke();
+
+    // Plat Katoda (kiri)
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillRect(tube.cathodeX - 7, tube.y + 28, 12, tube.h - 56);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText("KATODA", tube.cathodeX - 28, tube.y + 20);
+    ctx.font = "11px sans-serif";
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText(`W₀=${fmtNum(s.W0, 2)}eV`, tube.cathodeX - 32, tube.y + tube.h + 16);
+
+    // Plat Anoda (kanan)
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillRect(tube.anodeX - 5, tube.y + 28, 12, tube.h - 56);
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText("ANODA", tube.anodeX - 22, tube.y + 20);
+
+    // Rangkaian luar & sumber tegangan variabel
+    const wireY = 435;
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(tube.cathodeX - 1, tube.y + tube.h - 28);
+    ctx.lineTo(tube.cathodeX - 1, wireY);
+    ctx.lineTo(395, wireY);
+    ctx.moveTo(445, wireY);
+    ctx.lineTo(tube.anodeX + 1, wireY);
+    ctx.lineTo(tube.anodeX + 1, tube.y + tube.h - 28);
+    ctx.stroke();
+
+    // Simbol baterai / sumber tegangan variabel di tengah bawah
+    ctx.fillStyle = "#0f172a";
+    ctx.strokeStyle = s.V >= 0 ? "#38bdf8" : "#f59e0b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(395, wireY - 18, 50, 36, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "bold 11px sans-serif";
+    ctx.textAlign = "center";
+    const vText = (s.V >= 0 ? "+" : "") + fmtNum(s.V, 1) + "V";
+    ctx.fillText(vText, 420, wireY + 4);
+    ctx.textAlign = "left";
+
+    // Amperemeter di jalur kanan
+    ctx.fillStyle = "#0f172a";
+    ctx.strokeStyle = "#c084fc";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(tube.anodeX + 1, (tube.y + tube.h + wireY) * 0.5, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#e9d5ff";
+    ctx.font = "bold 10px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("A", tube.anodeX + 1, (tube.y + tube.h + wireY) * 0.5 - 4);
+    ctx.fillText(fmtNum(s.current_mA, 2), tube.anodeX + 1, (tube.y + tube.h + wireY) * 0.5 + 10);
+    ctx.textAlign = "left";
+
+    // Gambar Foton (gelombang kecil berwarna frekuensi)
+    for (const p of photons) {
+      ctx.save();
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      for (let k = -8; k <= 8; k += 2) {
+        const waveOffset = Math.sin(p.phase + k * 0.6) * 4.5;
+        const px = p.x + k;
+        const py = p.y + waveOffset;
+        if (k === -8) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Gambar Elektron (e-)
+    for (const el of electrons) {
+      if (el.trail.length > 1) {
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.35)";
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        el.trail.forEach((pt, idx) => {
+          if (idx === 0) ctx.moveTo(pt.x, pt.y);
+          else ctx.lineTo(pt.x, pt.y);
+        });
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#38bdf8";
+      ctx.beginPath();
+      ctx.arc(el.x, el.y, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#070b14";
+      ctx.font = "bold 8px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("-", el.x, el.y + 2.5);
+      ctx.textAlign = "left";
+
+      if (showVectors) {
+        ctx.strokeStyle = "rgba(74, 222, 128, 0.85)";
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(el.x, el.y);
+        ctx.lineTo(el.x + el.vx * 4.2, el.y + el.vy * 4.2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawIVChart(s) {
+    const w = ivCanvas.width;
+    const h = ivCanvas.height;
+    ivCtx.clearRect(0, 0, w, h);
+
+    const pad = { l: 42, r: 16, t: 14, b: 28 };
+    const pw = w - pad.l - pad.r;
+    const ph = h - pad.t - pad.b;
+
+    // Sumbu V dari -5V ke +5V, I dari 0 ke 1,2 mA
+    const vToX = (v) => pad.l + ((v + 5) / 10) * pw;
+    const iToY = (cur) => pad.t + ph - (Math.min(1.2, cur) / 1.2) * ph;
+
+    // Grid & sumbu nol
+    ivCtx.strokeStyle = "rgba(148, 163, 184, 0.16)";
+    ivCtx.lineWidth = 1;
+    const zeroX = vToX(0);
+    const zeroY = iToY(0);
+
+    ivCtx.beginPath();
+    ivCtx.moveTo(pad.l, zeroY);
+    ivCtx.lineTo(w - pad.r, zeroY);
+    ivCtx.moveTo(zeroX, pad.t);
+    ivCtx.lineTo(zeroX, h - pad.b);
+    ivCtx.stroke();
+
+    // Label sumbu
+    ivCtx.fillStyle = "#94a3b8";
+    ivCtx.font = "10px sans-serif";
+    ivCtx.fillText("I (mA)", 6, pad.t + 8);
+    ivCtx.fillText("V (V)", w - 38, h - 8);
+    ivCtx.fillText("-5V", pad.l - 4, h - 10);
+    ivCtx.fillText("+5V", w - pad.r - 18, h - 10);
+
+    // Kurva I-V real-time
+    ivCtx.strokeStyle = "#38bdf8";
+    ivCtx.lineWidth = 2.4;
+    ivCtx.beginPath();
+    for (let step = 0; step <= 200; step++) {
+      const vTest = -5 + (step / 200) * 10;
+      let cTest = 0;
+      if (s.canEmit) {
+        const iSat = s.intensity / 100;
+        if (vTest >= 0) cTest = iSat;
+        else if (vTest > s.Vs) {
+          cTest = iSat * Math.pow((vTest - s.Vs) / Math.abs(s.Vs || 1), 1.35);
+        }
+      }
+      const x = vToX(vTest);
+      const y = iToY(cTest);
+      if (step === 0) ivCtx.moveTo(x, y);
+      else ivCtx.lineTo(x, y);
+    }
+    ivCtx.stroke();
+
+    // Penanda Tegangan Henti (V_s) jika ada emisi
+    if (s.canEmit && s.Vs >= -5) {
+      const vsX = vToX(s.Vs);
+      ivCtx.strokeStyle = "#ef4444";
+      ivCtx.setLineDash([4, 3]);
+      ivCtx.beginPath();
+      ivCtx.moveTo(vsX, pad.t);
+      ivCtx.lineTo(vsX, h - pad.b);
+      ivCtx.stroke();
+      ivCtx.setLineDash([]);
+      ivCtx.fillStyle = "#f87171";
+      ivCtx.fillText(`Vs=${fmtNum(s.Vs, 1)}V`, vsX + 4, pad.t + 12);
+    }
+
+    // Titik kerja saat ini
+    const curX = vToX(s.V);
+    const curY = iToY(s.current_mA);
+    ivCtx.fillStyle = "#f59e0b";
+    ivCtx.beginPath();
+    ivCtx.arc(curX, curY, 5, 0, Math.PI * 2);
+    ivCtx.fill();
+  }
+
+  function drawEkChart(s) {
+    const w = ekCanvas.width;
+    const h = ekCanvas.height;
+    ekCtx.clearRect(0, 0, w, h);
+
+    const pad = { l: 42, r: 16, t: 14, b: 28 };
+    const pw = w - pad.l - pad.r;
+    const ph = h - pad.t - pad.b;
+
+    // Sumbu f dari 0 ke 17 (x10^14 Hz), Ek dari 0 ke 5 eV
+    const fToX = (fVal) => pad.l + (Math.max(0, Math.min(17, fVal)) / 17) * pw;
+    const ekToY = (ekVal) => pad.t + ph - (Math.max(0, Math.min(5, ekVal)) / 5) * ph;
+
+    ekCtx.strokeStyle = "rgba(148, 163, 184, 0.16)";
+    ekCtx.lineWidth = 1;
+    ekCtx.beginPath();
+    ekCtx.moveTo(pad.l, pad.t + ph);
+    ekCtx.lineTo(w - pad.r, pad.t + ph);
+    ekCtx.moveTo(pad.l, pad.t);
+    ekCtx.lineTo(pad.l, pad.t + ph);
+    ekCtx.stroke();
+
+    ekCtx.fillStyle = "#94a3b8";
+    ekCtx.font = "10px sans-serif";
+    ekCtx.fillText("Ek (eV)", 4, pad.t + 8);
+    ekCtx.fillText("f (10¹⁴Hz)", w - 54, h - 8);
+
+    // Garis Ek_maks = h*f - W0 untuk f >= f0
+    if (s.f0_14 <= 17) {
+      const x0 = fToX(s.f0_14);
+      const y0 = ekToY(0);
+      const fEnd = 17;
+      const ekEnd = Math.max(0, h_eVs * (fEnd * 1e14) - s.W0);
+      const xEnd = fToX(fEnd);
+      const yEnd = ekToY(ekEnd);
+
+      ekCtx.strokeStyle = "#4ade80";
+      ekCtx.lineWidth = 2.4;
+      ekCtx.beginPath();
+      ekCtx.moveTo(x0, y0);
+      ekCtx.lineTo(xEnd, yEnd);
+      ekCtx.stroke();
+
+      // Titik frekuensi ambang f0
+      ekCtx.fillStyle = "#f59e0b";
+      ekCtx.beginPath();
+      ekCtx.arc(x0, y0, 4.5, 0, Math.PI * 2);
+      ekCtx.fill();
+      ekCtx.fillText(`f₀=${fmtNum(s.f0_14, 1)}`, x0 - 10, h - 10);
+    }
+
+    // Posisi (f, Ek_maks) saat ini
+    const px = fToX(s.f14);
+    const py = ekToY(s.Ek_max);
+    ekCtx.fillStyle = "#a855f7";
+    ekCtx.beginPath();
+    ekCtx.arc(px, py, 5.5, 0, Math.PI * 2);
+    ekCtx.fill();
+  }
+
+  // Event listeners
+  btnPause.addEventListener("click", () => {
+    paused = !paused;
+    btnPause.textContent = paused ? "Lanjutkan" : "Jeda Simulasi";
+  });
+
+  btnReset.addEventListener("click", () => {
+    metalSelect.value = "na";
+    freqSlider.value = "8.0";
+    intSlider.value = "75";
+    voltSlider.value = "1.0";
+    electrons = [];
+    photons = [];
+  });
+
+  btnThreshold.addEventListener("click", () => {
+    const s = getPhysicsState();
+    const targetF14 = Math.min(16, Math.max(3, s.f0_14 + 0.15));
+    freqSlider.value = targetF14.toFixed(2);
+  });
+
+  btnTrail.addEventListener("click", () => {
+    showTrail = !showTrail;
+    document.getElementById("trailLabel").textContent = showTrail ? "Jejak Aktif" : "Jejak Off";
+  });
+
+  btnVectors.addEventListener("click", () => {
+    showVectors = !showVectors;
+    document.getElementById("vecLabel").textContent = showVectors ? "Vektor: ON" : "Vektor: OFF";
+  });
+
+  function loop() {
+    const state = getPhysicsState();
+    updateUI(state);
+    if (!paused) {
+      stepSimulation(state);
+    }
+    drawSim(state);
+    drawIVChart(state);
+    drawEkChart(state);
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+})();
+</script>
+</body>
+</html>
